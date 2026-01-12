@@ -1,121 +1,136 @@
 'use client';
 
-import { supabase } from '@/lib/supabaseClient';
-import { MenuCategory, MenuItem as MenuItemType, MenuByCategory } from '@/types/database';
-import CategorySection from '@/components/CategorySection';
 import { useEffect, useState } from 'react';
+import { supabase, isSupabaseConfigured } from '@/lib/supabaseClient';
+import type { MenuItem as MenuItemType } from '@/types/database';
+import CategorySection from '@/components/CategorySection';
+import MenuItem from '@/components/MenuItem';
 
-// Fallback menu data using local images
-const fallbackMenu: MenuByCategory[] = [
-    {
-        category: { id: 1, name: 'Shawarma Wraps', order: 1 },
-        items: [
-            { id: 1, name: 'Chicken Shawarma', price: 12.99, description: 'Tender marinated chicken with garlic sauce', image_filename: 'Chicken-Shawarma', available: true, category_id: 1 },
-            { id: 2, name: 'Beef Shawarma', price: 13.99, description: 'Seasoned beef with tahini and vegetables', image_filename: 'Beef-Shawarma', available: true, category_id: 1 },
-        ]
-    },
-    {
-        category: { id: 2, name: 'Bowls', order: 2 },
-        items: [
-            { id: 3, name: 'Chicken Shawarma Bowl', price: 15.99, description: 'Rice, salad, and chicken shawarma', image_filename: 'Chicken-Shawarma-Bowl', available: true, category_id: 2 },
-            { id: 4, name: 'Beef Shawarma Bowl', price: 16.99, description: 'Rice, salad, and beef shawarma', image_filename: 'Beef-Shawarma-Bowl', available: true, category_id: 2 },
-            { id: 5, name: 'Falafel Bowl', price: 14.99, description: 'Fresh falafel with hummus and salad', image_filename: 'Falafel-Bowl', available: true, category_id: 2 },
-            { id: 6, name: 'Mixed Shawarma Bowl', price: 17.99, description: 'Chicken and beef shawarma combo', image_filename: 'Shawarma-Bowl-Mix', available: true, category_id: 2 },
-        ]
-    },
-    {
-        category: { id: 3, name: 'Skewers', order: 3 },
-        items: [
-            { id: 7, name: 'Chicken Skewers', price: 14.99, description: 'Grilled chicken skewers', image_filename: 'Chicken-Skewers', available: true, category_id: 3 },
-            { id: 8, name: 'Beef Skewers', price: 15.99, description: 'Grilled beef skewers', image_filename: 'Beef-Skewers', available: true, category_id: 3 },
-            { id: 9, name: 'Kafta Skewers', price: 15.99, description: 'Seasoned ground beef skewers', image_filename: 'Kafta-Skewers', available: true, category_id: 3 },
-        ]
-    },
+// Fallback data for when Supabase isn't configured
+const fallbackMenuItems: MenuItemType[] = [
+    { id: '1', name: 'Chicken Shawarma Wrap', description: 'Tender marinated chicken in fresh pita with garlic sauce', price: 12.99, category: 'Shawarma Wraps', image_url: '/food-photos/Chicken-Shawarma.png', created_at: '' },
+    { id: '2', name: 'Beef Shawarma Wrap', description: 'Slow-roasted beef with pickles and tahini', price: 13.99, category: 'Shawarma Wraps', image_url: '/food-photos/Beef-Shawarma.png', created_at: '' },
+    { id: '3', name: 'Falafel Wrap', description: 'Crispy falafel with hummus and fresh vegetables', price: 10.99, category: 'Shawarma Wraps', image_url: '/food-photos/Falafel-Bowl.png', created_at: '' },
+    { id: '4', name: 'Chicken Shawarma Bowl', description: 'Rice, salad, chicken shawarma with all the fixings', price: 15.99, category: 'Bowls', image_url: '/food-photos/Chicken-Shawarma-Bowl.png', created_at: '' },
+    { id: '5', name: 'Beef Shawarma Bowl', description: 'Rice, salad, beef shawarma with garlic and tahini', price: 16.99, category: 'Bowls', image_url: '/food-photos/Beef-Shawarma-Bowl.png', created_at: '' },
+    { id: '6', name: 'Mixed Shawarma Bowl', description: 'Best of both worlds - chicken and beef', price: 17.99, category: 'Bowls', image_url: '/food-photos/Shawarma-Bowl-Mix.png', created_at: '' },
+    { id: '7', name: 'Chicken Skewers', description: 'Grilled chicken skewers with rice and salad', price: 14.99, category: 'Skewers', image_url: '/food-photos/Chicken-Skewers.png', created_at: '' },
+    { id: '8', name: 'Kafta Skewers', description: 'Seasoned ground beef skewers', price: 15.99, category: 'Skewers', image_url: '/food-photos/Kafta-Skewers.png', created_at: '' },
+    { id: '9', name: 'Mixed Skewer Plate', description: 'Assortment of grilled skewers', price: 18.99, category: 'Skewers', image_url: '/food-photos/Skewer-Mix-Bowl.png', created_at: '' },
 ];
 
-async function getMenuData(): Promise<MenuByCategory[]> {
-    if (!supabase) return fallbackMenu;
-
-    try {
-        const { data: categories, error: categoriesError } = await supabase
-            .from('menu_categories')
-            .select('*')
-            .order('order', { ascending: true });
-
-        if (categoriesError || !categories || categories.length === 0) return fallbackMenu;
-
-        const { data: items, error: itemsError } = await supabase
-            .from('menu_items')
-            .select('*')
-            .order('name', { ascending: true });
-
-        if (itemsError || !items || items.length === 0) return fallbackMenu;
-
-        return (categories as MenuCategory[]).map((category) => ({
-            category,
-            items: (items as MenuItemType[]).filter((item) => item.category_id === category.id),
-        }));
-    } catch {
-        return fallbackMenu;
-    }
-}
-
 export default function MenuPage() {
-    const [menuData, setMenuData] = useState<MenuByCategory[]>(fallbackMenu);
+    const [menuItems, setMenuItems] = useState<MenuItemType[]>([]);
     const [loading, setLoading] = useState(true);
+    const [activeCategory, setActiveCategory] = useState<string | null>(null);
 
     useEffect(() => {
-        getMenuData().then((data) => {
-            setMenuData(data);
-            setLoading(false);
-        });
+        async function fetchMenu() {
+            if (!isSupabaseConfigured() || !supabase) {
+                setMenuItems(fallbackMenuItems);
+                setLoading(false);
+                return;
+            }
+
+            try {
+                const { data, error } = await supabase
+                    .from('menu_items')
+                    .select('*')
+                    .order('category', { ascending: true });
+
+                if (error) throw error;
+                setMenuItems(data && data.length > 0 ? data : fallbackMenuItems);
+            } catch (error) {
+                console.error('Error fetching menu:', error);
+                setMenuItems(fallbackMenuItems);
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        fetchMenu();
     }, []);
 
+    // Group items by category
+    const categories = menuItems.reduce((acc, item) => {
+        if (!acc[item.category]) {
+            acc[item.category] = [];
+        }
+        acc[item.category].push(item);
+        return acc;
+    }, {} as Record<string, MenuItemType[]>);
+
+    const categoryNames = Object.keys(categories);
+
     return (
-        <div className="min-h-screen bg-amber-50">
-            {/* Hero Header */}
-            <div className="bg-gradient-to-b from-white to-amber-50 text-stone-900 py-16 md:py-24 pt-24">
-                <div className="container mx-auto px-4 text-center">
-                    <p className="text-red-600 font-semibold tracking-widest uppercase mb-4">
-                        Our Food
-                    </p>
-                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
-                        THE MENU
-                    </h1>
-                    <p className="text-stone-600 text-lg max-w-lg mx-auto">
-                        Fresh, authentic flavors made daily with premium ingredients
+        <div className="pt-16 min-h-screen">
+            {/* Hero Banner */}
+            <div className="relative overflow-hidden bg-neutral-900 text-white py-20">
+                <div className="absolute inset-0 bg-[url('/food-photos/Shawarma-Bowl-Mix.png')] bg-cover bg-center opacity-40" />
+                <div className="absolute inset-0 bg-gradient-to-t from-neutral-900 to-transparent" />
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+                    <h1 className="text-3xl md:text-4xl font-semibold tracking-tight">Our Menu</h1>
+                    <p className="text-neutral-300 mt-2 max-w-xl font-light">
+                        Authentic Mediterranean dishes made fresh daily with premium ingredients.
                     </p>
                 </div>
             </div>
 
-            {/* Category Quick Nav */}
-            {menuData.length > 0 && (
-                <div className="sticky top-16 md:top-20 z-40 bg-white/95 backdrop-blur-sm border-b border-stone-200 shadow-sm">
-                    <div className="container mx-auto px-4">
-                        <nav className="flex gap-2 overflow-x-auto py-4 scrollbar-hide" aria-label="Menu categories">
-                            {menuData.map(({ category, items }) => {
-                                const availableCount = items.filter(i => i.available).length;
-                                if (availableCount === 0) return null;
-                                return (
-                                    <a
-                                        key={category.id}
-                                        href={`#category-${category.id}`}
-                                        className="px-5 py-2 bg-stone-100 hover:bg-red-600 hover:text-white text-stone-700 rounded-full text-sm font-semibold whitespace-nowrap transition-colors tracking-wide"
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+                <div className="flex flex-col lg:flex-row gap-8">
+                    {/* Filters Sidebar */}
+                    <aside className="w-full lg:w-64 flex-shrink-0">
+                        <div className="glass-panel p-6 rounded-2xl sticky top-24">
+                            <h3 className="font-semibold text-neutral-900 mb-4 text-sm uppercase tracking-wide">Categories</h3>
+                            <div className="space-y-2">
+                                <button
+                                    onClick={() => setActiveCategory(null)}
+                                    className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors ${activeCategory === null
+                                            ? 'bg-orange-600 text-white'
+                                            : 'text-neutral-600 hover:bg-white/50 hover:text-neutral-900'
+                                        }`}
+                                >
+                                    All Items
+                                </button>
+                                {categoryNames.map((cat) => (
+                                    <button
+                                        key={cat}
+                                        onClick={() => setActiveCategory(cat)}
+                                        className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors ${activeCategory === cat
+                                                ? 'bg-orange-600 text-white'
+                                                : 'text-neutral-600 hover:bg-white/50 hover:text-neutral-900'
+                                            }`}
                                     >
-                                        {category.name.toUpperCase()}
-                                    </a>
-                                );
-                            })}
-                        </nav>
+                                        {cat}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </aside>
+
+                    {/* Menu Grid */}
+                    <div className="flex-grow">
+                        {loading ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {[...Array(6)].map((_, i) => (
+                                    <div key={i} className="glass-card rounded-2xl h-80 animate-pulse" />
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="space-y-12">
+                                {(activeCategory ? [activeCategory] : categoryNames).map((category) => (
+                                    <CategorySection key={category} title={category}>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                            {categories[category].map((item, idx) => (
+                                                <MenuItem key={item.id} item={item} index={idx} />
+                                            ))}
+                                        </div>
+                                    </CategorySection>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </div>
-            )}
-
-            {/* Menu Content */}
-            <div className="container mx-auto px-4 py-12 md:py-16">
-                {menuData.map(({ category, items }) => (
-                    <CategorySection key={category.id} category={category} items={items} />
-                ))}
             </div>
         </div>
     );

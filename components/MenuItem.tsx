@@ -1,66 +1,60 @@
 'use client';
 
+import type { MenuItem as MenuItemType } from '@/types/database';
 import Image from 'next/image';
-import { MenuItem as MenuItemType } from '@/types/database';
-import { getImageUrl } from '@/lib/imageUrl';
+import { BlurFade } from './ui/blur-fade';
 
 interface MenuItemProps {
     item: MenuItemType;
+    index?: number;
 }
 
-export default function MenuItem({ item }: MenuItemProps) {
-    const formatPrice = (price: number) => {
-        return new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: 'USD',
-        }).format(price);
-    };
-
-    const imageUrl = getImageUrl(item.image_filename);
-
-    if (!item.available) {
-        return null;
-    }
-
+export default function MenuItem({ item, index = 0 }: MenuItemProps) {
     return (
-        <div className="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all group">
-            {/* Image */}
-            <div className="relative aspect-square bg-stone-100">
-                {imageUrl ? (
-                    <Image
-                        src={imageUrl}
-                        alt={item.name}
-                        fill
-                        className="object-cover transition-transform duration-500 group-hover:scale-105"
-                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                        loading="lazy"
-                    />
-                ) : (
-                    <div className="absolute inset-0 flex items-center justify-center bg-stone-100">
-                        <svg className="w-16 h-16 text-stone-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                    </div>
-                )}
-            </div>
-
-            {/* Content */}
-            <div className="p-5">
-                <div className="flex justify-between items-start gap-3">
-                    <h3 className="text-lg font-bold text-stone-900 leading-tight">
-                        {item.name}
-                    </h3>
-                    <span className="text-xl font-bold text-red-600 whitespace-nowrap">
-                        {formatPrice(item.price)}
-                    </span>
+        <BlurFade delay={0.1 + index * 0.05} inView>
+            <div className="glass-card rounded-2xl overflow-hidden group flex flex-col h-full">
+                {/* Image */}
+                <div className="h-48 overflow-hidden relative">
+                    {item.image_url ? (
+                        <Image
+                            src={item.image_url}
+                            alt={item.name}
+                            fill
+                            className="object-cover group-hover:scale-105 transition-transform duration-700"
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        />
+                    ) : (
+                        <div className="w-full h-full bg-neutral-100 flex items-center justify-center">
+                            <span className="text-neutral-400 text-sm">No image</span>
+                        </div>
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 </div>
 
-                {item.description && (
-                    <p className="mt-2 text-sm text-stone-500 leading-relaxed line-clamp-2">
-                        {item.description}
-                    </p>
-                )}
+                {/* Content */}
+                <div className="p-5 flex flex-col flex-grow">
+                    <div className="flex justify-between items-start mb-2">
+                        <h3 className="font-semibold text-neutral-900 text-lg tracking-tight leading-tight">
+                            {item.name}
+                        </h3>
+                        <span className="font-medium text-neutral-900 bg-white/50 px-2 py-0.5 rounded-lg border border-white text-sm">
+                            ${item.price.toFixed(2)}
+                        </span>
+                    </div>
+
+                    {item.description && (
+                        <p className="text-neutral-500 text-xs mb-4 line-clamp-2 leading-relaxed">
+                            {item.description}
+                        </p>
+                    )}
+
+                    <div className="mt-auto pt-4 border-t border-neutral-200/50">
+                        <span className="bg-neutral-100/50 px-2 py-1 rounded text-neutral-600 border border-white/50 text-[10px] font-medium uppercase tracking-wider">
+                            {item.category}
+                        </span>
+                    </div>
+                </div>
             </div>
-        </div>
+        </BlurFade>
     );
 }

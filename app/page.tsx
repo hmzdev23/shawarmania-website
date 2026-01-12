@@ -3,158 +3,125 @@
 import Hero from '@/components/Hero';
 import Link from 'next/link';
 import Image from 'next/image';
-import { LinkPreview } from '@/components/ui/link-preview';
+
+const featuredItems = [
+  { name: 'Shawarma Wrap', image: '/food-photos/Chicken-Shawarma.png', desc: 'Tender marinated meat in fresh pita' },
+  { name: 'Mixed Bowl', image: '/food-photos/Shawarma-Bowl-Mix.png', desc: 'Rice, salad, and your choice of protein' },
+  { name: 'Skewer Plate', image: '/food-photos/Skewer-Mix-Bowl.png', desc: 'Grilled to perfection with fresh sides' },
+  { name: 'Falafel Bowl', image: '/food-photos/Falafel-Bowl.png', desc: 'Crispy falafel with hummus and salad' },
+  { name: 'Beef Shawarma', image: '/food-photos/Beef-Shawarma.png', desc: 'Slow-roasted beef with garlic sauce' },
+  { name: 'Kafta Skewers', image: '/food-photos/Kafta-Skewers.png', desc: 'Seasoned ground beef skewers' },
+];
 
 export default function Home() {
   return (
-    <>
+    <div className="pt-16">
       <Hero />
 
-      {/* About Section */}
-      <section className="py-20 md:py-28 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center">
-            <p className="text-red-600 font-semibold tracking-widest uppercase mb-4">
-              About Us
-            </p>
-            <h2 className="text-3xl md:text-5xl font-bold text-stone-900 mb-6">
-              Modern Mediterranean Cuisine
-            </h2>
-            <p className="text-stone-600 text-lg leading-relaxed mb-8">
-              Shawarmania captures a truly modern taste of Mediterranean cuisine while giving
-              guests the luxury of customizing their preferences. We use the highest quality
-              ingredients to deliver traditional recipes freshly interpreted and served with passion.
-            </p>
+      {/* Categories Section */}
+      <section className="py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-end mb-10">
+            <div>
+              <h2 className="text-2xl font-semibold tracking-tight text-neutral-900">Popular Items</h2>
+              <p className="text-neutral-500 mt-2 text-sm">Explore our most ordered dishes.</p>
+            </div>
             <Link
               href="/menu"
-              className="inline-block text-red-600 hover:text-red-700 font-bold tracking-wide"
+              className="hidden md:flex items-center text-neutral-500 hover:text-orange-600 font-medium text-sm gap-1 transition-colors"
             >
-              DISCOVER OUR MENU →
+              See all
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
             </Link>
           </div>
-        </div>
-      </section>
 
-      {/* Featured Items */}
-      <section className="py-20 bg-amber-50">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <p className="text-red-600 font-semibold tracking-widest uppercase mb-4">
-              Our Food
-            </p>
-            <h2 className="text-3xl md:text-5xl font-bold text-stone-900">
-              Fan Favorites
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-            {[
-              { name: 'Chicken Shawarma', image: '/food-photos/Chicken-Shawarma.png' },
-              { name: 'Beef Shawarma Bowl', image: '/food-photos/Beef-Shawarma-Bowl.png' },
-              { name: 'Chicken Shawarma Bowl', image: '/food-photos/Chicken-Shawarma-Bowl.png' },
-            ].map((item) => (
-              <Link
-                key={item.name}
-                href="/menu"
-                className="group relative aspect-square rounded-2xl overflow-hidden shadow-xl"
-              >
-                <Image
-                  src={item.image}
-                  alt={item.name}
-                  fill
-                  className="object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                <div className="absolute bottom-0 left-0 right-0 p-6">
-                  <h3 className="text-white text-xl font-bold">{item.name}</h3>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            {featuredItems.map((item, idx) => (
+              <Link href="/menu" key={idx} className="group cursor-pointer">
+                <div className="aspect-square rounded-2xl glass-card overflow-hidden relative mb-3 p-2">
+                  <div className="relative w-full h-full rounded-xl overflow-hidden">
+                    <Image
+                      src={item.image}
+                      alt={item.name}
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                  </div>
                 </div>
+                <h3 className="text-center font-medium text-sm text-neutral-800 group-hover:text-orange-600 transition-colors">{item.name}</h3>
               </Link>
             ))}
           </div>
+        </div>
+      </section>
 
-          <div className="text-center mt-10">
-            <Link
-              href="/menu"
-              className="inline-block bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-full font-bold tracking-wide transition-colors"
-            >
-              VIEW FULL MENU
-            </Link>
+      {/* About Section */}
+      <section className="py-20 border-t border-neutral-200/50 bg-white/20 backdrop-blur-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="glass-panel rounded-3xl p-10 md:p-16">
+            <div className="max-w-3xl mx-auto text-center">
+              <h2 className="text-3xl font-semibold tracking-tight text-neutral-900 mb-6">
+                Authentic Mediterranean <br />flavors in Montreal
+              </h2>
+              <p className="text-lg text-neutral-500 leading-relaxed font-light">
+                At Shawarmania, we bring the rich flavors of the Middle East to downtown Montreal.
+                Our recipes use fresh ingredients, traditional spices, and time-honored techniques
+                to create dishes that taste like home.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-8 mt-16">
+              <div className="p-6 bg-white/50 rounded-2xl border border-white/60 text-center shadow-sm">
+                <h3 className="text-4xl font-bold text-orange-600 mb-2 tracking-tight">100%</h3>
+                <p className="text-neutral-600 font-medium text-sm">Halal Certified</p>
+              </div>
+              <div className="p-6 bg-white/50 rounded-2xl border border-white/60 text-center shadow-sm">
+                <h3 className="text-4xl font-bold text-orange-600 mb-2 tracking-tight">Fresh</h3>
+                <p className="text-neutral-600 font-medium text-sm">Made Daily</p>
+              </div>
+              <div className="p-6 bg-white/50 rounded-2xl border border-white/60 text-center shadow-sm">
+                <h3 className="text-4xl font-bold text-orange-600 mb-2 tracking-tight">Fast</h3>
+                <p className="text-neutral-600 font-medium text-sm">Quick & Delivery</p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Info Section */}
-      <section className="py-20 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto text-center">
-            {/* Location */}
-            <LinkPreview
-              url="https://maps.app.goo.gl/TL6ptSscu3EcaAHCA"
-              className="group p-6 block"
-            >
-              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-red-600 group-hover:scale-110 transition-all">
-                <svg className="w-8 h-8 text-red-600 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      {/* Location CTA */}
+      <section className="py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="glass-panel rounded-3xl p-10 md:p-16 text-center">
+            <h2 className="text-2xl font-semibold tracking-tight text-neutral-900 mb-4">Visit Us Today</h2>
+            <p className="text-neutral-500 mb-8 max-w-md mx-auto">
+              896 Sherbrooke St W, Montreal<br />
+              Open 11am – 12am daily
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <a
+                href="https://maps.app.goo.gl/TL6ptSscu3EcaAHCA"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-8 py-3.5 bg-neutral-900 hover:bg-neutral-800 text-white text-sm font-medium rounded-xl shadow-lg shadow-neutral-900/10 transition-all hover:-translate-y-0.5 flex items-center justify-center gap-2"
+              >
+                Get Directions
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
-              </div>
-              <h3 className="text-stone-900 font-bold text-lg mb-2">LOCATION</h3>
-              <p className="text-stone-600">896 Sherbrooke St W<br />Montreal, QC</p>
-            </LinkPreview>
-
-            {/* Hours */}
-            <div className="p-6">
-              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <h3 className="text-stone-900 font-bold text-lg mb-2">HOURS</h3>
-              <p className="text-stone-600">11am – 12am<br />7 Days a Week</p>
+              </a>
+              <a
+                href="tel:+15147467602"
+                className="px-8 py-3.5 bg-white/50 border border-white/60 backdrop-blur-sm hover:bg-white text-neutral-900 text-sm font-medium rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm"
+              >
+                Call Us
+              </a>
             </div>
-
-            {/* Phone */}
-            <a
-              href="tel:+15147467602"
-              className="group p-6"
-            >
-              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-red-600 group-hover:scale-110 transition-all">
-                <svg className="w-8 h-8 text-red-600 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                </svg>
-              </div>
-              <h3 className="text-stone-900 font-bold text-lg mb-2">CALL US</h3>
-              <p className="text-stone-600">(514) 746-7602</p>
-            </a>
           </div>
         </div>
       </section>
-
-      {/* Delivery CTA */}
-      <section className="py-16 bg-red-600">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            Order For Delivery
-          </h2>
-          <p className="text-white/80 mb-8 max-w-lg mx-auto">
-            Get your favorite shawarma delivered right to your door.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <LinkPreview
-              url="https://www.ubereats.com/ca/store/shawarmania/MUsajDhtVBGQZA2tN689gw?diningMode=DELIVERY"
-              className="bg-white hover:bg-stone-100 text-red-600 px-8 py-3 rounded-full font-bold transition-colors inline-block"
-            >
-              UBER EATS
-            </LinkPreview>
-            <LinkPreview
-              url="https://www.doordash.com/en-CA/store/shawarmania-896-rue-sherbrooke-o-montr%C3%A9al-32839777/85761963/"
-              className="bg-white hover:bg-stone-100 text-red-600 px-8 py-3 rounded-full font-bold transition-colors inline-block"
-            >
-              DOORDASH
-            </LinkPreview>
-          </div>
-        </div>
-      </section>
-    </>
+    </div>
   );
 }
