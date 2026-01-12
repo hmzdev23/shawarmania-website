@@ -1,17 +1,40 @@
-import { Metadata } from 'next';
+'use client';
+
 import { supabase } from '@/lib/supabaseClient';
 import { MenuCategory, MenuItem as MenuItemType, MenuByCategory } from '@/types/database';
 import CategorySection from '@/components/CategorySection';
+import { useEffect, useState } from 'react';
 
-export const metadata: Metadata = {
-    title: "Menu",
-    description: "Browse our menu of fresh shawarma wraps, hearty bowls, and sizzling skewers. Order for pickup or delivery in Montreal.",
-};
-
-export const dynamic = 'force-dynamic';
+// Fallback menu data using local images
+const fallbackMenu: MenuByCategory[] = [
+    {
+        category: { id: 1, name: 'Shawarma Wraps', order: 1 },
+        items: [
+            { id: 1, name: 'Chicken Shawarma', price: 12.99, description: 'Tender marinated chicken with garlic sauce', image_filename: 'Chicken-Shawarma', available: true, category_id: 1 },
+            { id: 2, name: 'Beef Shawarma', price: 13.99, description: 'Seasoned beef with tahini and vegetables', image_filename: 'Beef-Shawarma', available: true, category_id: 1 },
+        ]
+    },
+    {
+        category: { id: 2, name: 'Bowls', order: 2 },
+        items: [
+            { id: 3, name: 'Chicken Shawarma Bowl', price: 15.99, description: 'Rice, salad, and chicken shawarma', image_filename: 'Chicken-Shawarma-Bowl', available: true, category_id: 2 },
+            { id: 4, name: 'Beef Shawarma Bowl', price: 16.99, description: 'Rice, salad, and beef shawarma', image_filename: 'Beef-Shawarma-Bowl', available: true, category_id: 2 },
+            { id: 5, name: 'Falafel Bowl', price: 14.99, description: 'Fresh falafel with hummus and salad', image_filename: 'Falafel-Bowl', available: true, category_id: 2 },
+            { id: 6, name: 'Mixed Shawarma Bowl', price: 17.99, description: 'Chicken and beef shawarma combo', image_filename: 'Shawarma-Bowl-Mix', available: true, category_id: 2 },
+        ]
+    },
+    {
+        category: { id: 3, name: 'Skewers', order: 3 },
+        items: [
+            { id: 7, name: 'Chicken Skewers', price: 14.99, description: 'Grilled chicken skewers', image_filename: 'Chicken-Skewers', available: true, category_id: 3 },
+            { id: 8, name: 'Beef Skewers', price: 15.99, description: 'Grilled beef skewers', image_filename: 'Beef-Skewers', available: true, category_id: 3 },
+            { id: 9, name: 'Kafta Skewers', price: 15.99, description: 'Seasoned ground beef skewers', image_filename: 'Kafta-Skewers', available: true, category_id: 3 },
+        ]
+    },
+];
 
 async function getMenuData(): Promise<MenuByCategory[]> {
-    if (!supabase) return [];
+    if (!supabase) return fallbackMenu;
 
     try {
         const { data: categories, error: categoriesError } = await supabase
@@ -19,39 +42,47 @@ async function getMenuData(): Promise<MenuByCategory[]> {
             .select('*')
             .order('order', { ascending: true });
 
-        if (categoriesError) return [];
+        if (categoriesError || !categories || categories.length === 0) return fallbackMenu;
 
         const { data: items, error: itemsError } = await supabase
             .from('menu_items')
             .select('*')
             .order('name', { ascending: true });
 
-        if (itemsError) return [];
+        if (itemsError || !items || items.length === 0) return fallbackMenu;
 
         return (categories as MenuCategory[]).map((category) => ({
             category,
             items: (items as MenuItemType[]).filter((item) => item.category_id === category.id),
         }));
     } catch {
-        return [];
+        return fallbackMenu;
     }
 }
 
-export default async function MenuPage() {
-    const menuData = await getMenuData();
+export default function MenuPage() {
+    const [menuData, setMenuData] = useState<MenuByCategory[]>(fallbackMenu);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        getMenuData().then((data) => {
+            setMenuData(data);
+            setLoading(false);
+        });
+    }, []);
 
     return (
-        <div className="min-h-screen bg-zinc-900">
+        <div className="min-h-screen bg-amber-50">
             {/* Hero Header */}
-            <div className="bg-black text-white py-16 md:py-24">
+            <div className="bg-gradient-to-b from-white to-amber-50 text-stone-900 py-16 md:py-24 pt-24">
                 <div className="container mx-auto px-4 text-center">
-                    <p className="text-yellow-400 font-semibold tracking-widest uppercase mb-4">
+                    <p className="text-red-600 font-semibold tracking-widest uppercase mb-4">
                         Our Food
                     </p>
                     <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
                         THE MENU
                     </h1>
-                    <p className="text-white/60 text-lg max-w-lg mx-auto">
+                    <p className="text-stone-600 text-lg max-w-lg mx-auto">
                         Fresh, authentic flavors made daily with premium ingredients
                     </p>
                 </div>
@@ -59,7 +90,7 @@ export default async function MenuPage() {
 
             {/* Category Quick Nav */}
             {menuData.length > 0 && (
-                <div className="sticky top-16 md:top-20 z-40 bg-black/95 backdrop-blur-sm border-b border-zinc-800">
+                <div className="sticky top-16 md:top-20 z-40 bg-white/95 backdrop-blur-sm border-b border-stone-200 shadow-sm">
                     <div className="container mx-auto px-4">
                         <nav className="flex gap-2 overflow-x-auto py-4 scrollbar-hide" aria-label="Menu categories">
                             {menuData.map(({ category, items }) => {
@@ -69,7 +100,7 @@ export default async function MenuPage() {
                                     <a
                                         key={category.id}
                                         href={`#category-${category.id}`}
-                                        className="px-5 py-2 bg-zinc-800 hover:bg-yellow-400 hover:text-black text-white rounded-full text-sm font-semibold whitespace-nowrap transition-colors tracking-wide"
+                                        className="px-5 py-2 bg-stone-100 hover:bg-red-600 hover:text-white text-stone-700 rounded-full text-sm font-semibold whitespace-nowrap transition-colors tracking-wide"
                                     >
                                         {category.name.toUpperCase()}
                                     </a>
@@ -82,21 +113,9 @@ export default async function MenuPage() {
 
             {/* Menu Content */}
             <div className="container mx-auto px-4 py-12 md:py-16">
-                {menuData.length > 0 ? (
-                    menuData.map(({ category, items }) => (
-                        <CategorySection key={category.id} category={category} items={items} />
-                    ))
-                ) : (
-                    <div className="text-center py-20">
-                        <div className="w-20 h-20 bg-zinc-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <svg className="w-10 h-10 text-zinc-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                            </svg>
-                        </div>
-                        <h2 className="text-xl font-semibold text-white mb-2">Menu Coming Soon</h2>
-                        <p className="text-white/50">Check back later for our delicious offerings.</p>
-                    </div>
-                )}
+                {menuData.map(({ category, items }) => (
+                    <CategorySection key={category.id} category={category} items={items} />
+                ))}
             </div>
         </div>
     );

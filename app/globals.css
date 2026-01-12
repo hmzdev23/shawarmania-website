@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  --background: #18181b;
-  --foreground: #ffffff;
+  --background: #fffbeb;
+  --foreground: #1c1917;
 }
 
 @theme inline {
@@ -36,4 +36,33 @@ body {
 
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
+}
+
+/* Marquee animations */
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(calc(-100% - var(--gap)));
+  }
+}
+
+@keyframes marquee-vertical {
+  from {
+    transform: translateY(0);
+  }
+
+  to {
+    transform: translateY(calc(-100% - var(--gap)));
+  }
+}
+
+.animate-marquee {
+  animation: marquee var(--duration) linear infinite;
+}
+
+.animate-marquee-vertical {
+  animation: marquee-vertical var(--duration) linear infinite;
 }

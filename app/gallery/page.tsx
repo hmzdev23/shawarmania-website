@@ -1,18 +1,34 @@
-import { Metadata } from 'next';
+'use client';
+
 import Image from 'next/image';
 import { supabase } from '@/lib/supabaseClient';
 import { MenuItem } from '@/types/database';
 import { getImageUrl } from '@/lib/imageUrl';
+import { BlurFade } from '@/components/ui/blur-fade';
+import { useEffect, useState } from 'react';
 
-export const metadata: Metadata = {
-    title: "Gallery",
-    description: "See our delicious shawarma, bowls, and skewers. Fresh Middle Eastern food made daily in Montreal.",
-};
-
-export const dynamic = 'force-dynamic';
+// Local food images as fallback
+const localImages = [
+    '/food-photos/Beef-Shawarma.png',
+    '/food-photos/Chicken-Shawarma-Bowl.png',
+    '/food-photos/Falafel-Bowl.png',
+    '/food-photos/Beef-Shawarma-Bowl.png',
+    '/food-photos/Chicken-Shawarma.png',
+    '/food-photos/Shawarma-Bowl-Mix.png',
+    '/food-photos/Kafta-Skewers-Bowl.png',
+    '/food-photos/Mandi-Bowl.png',
+    '/food-photos/Skewer-Mix-Bowl.png',
+    '/food-photos/Beef-Skewers.png',
+    '/food-photos/Chicken-Skewers.png',
+    '/food-photos/Shawarma-Burger.png',
+    '/food-photos/Kafta-Skewers.png',
+    '/food-photos/Vegan-Skewers.png',
+    '/food-photos/Beef-Poutine.png',
+    '/food-photos/Shawarma-Sushi.png',
+];
 
 async function getGalleryImages(): Promise<string[]> {
-    if (!supabase) return [];
+    if (!supabase) return localImages;
 
     try {
         const { data: items, error } = await supabase
@@ -21,33 +37,41 @@ async function getGalleryImages(): Promise<string[]> {
             .not('image_filename', 'is', null)
             .order('name');
 
-        if (error || !items) return [];
+        if (error || !items || items.length === 0) return localImages;
 
         const urls = items
             .map((item: Pick<MenuItem, 'image_filename'>) => getImageUrl(item.image_filename))
             .filter((url): url is string => url !== null);
 
-        return [...new Set(urls)];
+        return urls.length > 0 ? [...new Set(urls)] : localImages;
     } catch {
-        return [];
+        return localImages;
     }
 }
 
-export default async function GalleryPage() {
-    const images = await getGalleryImages();
+export default function GalleryPage() {
+    const [images, setImages] = useState<string[]>(localImages);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        getGalleryImages().then((data) => {
+            setImages(data);
+            setLoading(false);
+        });
+    }, []);
 
     return (
-        <div className="min-h-screen bg-zinc-900">
+        <div className="min-h-screen bg-amber-50">
             {/* Header */}
-            <div className="bg-black text-white py-16 md:py-24">
+            <div className="bg-gradient-to-b from-white to-amber-50 text-stone-900 py-16 md:py-24 pt-24">
                 <div className="container mx-auto px-4 text-center">
-                    <p className="text-yellow-400 font-semibold tracking-widest uppercase mb-4">
+                    <p className="text-red-600 font-semibold tracking-widest uppercase mb-4">
                         Our Food
                     </p>
                     <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
                         GALLERY
                     </h1>
-                    <p className="text-white/60 text-lg">
+                    <p className="text-stone-600 text-lg">
                         A taste of what we offer
                     </p>
                 </div>
@@ -55,13 +79,10 @@ export default async function GalleryPage() {
 
             {/* Gallery Grid */}
             <div className="container mx-auto px-4 py-12 md:py-16">
-                {images.length > 0 ? (
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
-                        {images.map((url, index) => (
-                            <div
-                                key={url}
-                                className="relative aspect-square bg-zinc-800 rounded-xl overflow-hidden group"
-                            >
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
+                    {images.map((url, index) => (
+                        <BlurFade key={url + index} inView delay={0.05 * (index % 8)}>
+                            <div className="relative aspect-square bg-white rounded-xl overflow-hidden shadow-md group">
                                 <Image
                                     src={url}
                                     alt={`Food photo ${index + 1}`}
@@ -71,19 +92,9 @@ export default async function GalleryPage() {
                                     loading="lazy"
                                 />
                             </div>
-                        ))}
-                    </div>
-                ) : (
-                    <div className="text-center py-20">
-                        <div className="w-20 h-20 bg-zinc-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <svg className="w-10 h-10 text-zinc-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                            </svg>
-                        </div>
-                        <h2 className="text-xl font-semibold text-white mb-2">Gallery Coming Soon</h2>
-                        <p className="text-white/50">Check back later for photos of our dishes.</p>
-                    </div>
-                )}
+                        </BlurFade>
+                    ))}
+                </div>
             </div>
         </div>
     );

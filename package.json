@@ -9,10 +9,16 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@radix-ui/react-hover-card": "^1.1.15",
     "@supabase/supabase-js": "^2.90.1",
+    "@tabler/icons-react": "^3.36.1",
+    "clsx": "^2.1.1",
+    "motion": "^12.25.0",
     "next": "16.1.1",
+    "qss": "^3.0.0",
     "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "react-dom": "19.2.3",
+    "tailwind-merge": "^3.4.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
