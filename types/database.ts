@@ -11,14 +11,14 @@ export interface MenuItem {
   name: string;
   description: string;
   price: number;
-  category_id: string;
-  image_filename: string | null;
-  available: boolean;
+  category: string;
+  image_url: string | null;
+  created_at: string;
 }
 
 // For convenience, a menu item with its category
 export interface MenuItemWithCategory extends MenuItem {
-  category: MenuCategory;
+  categoryData: MenuCategory;
 }
 
 // Grouped menu data for display
