@@ -4,8 +4,9 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { VideoMedia } from './ui/video-media';
 
-// Video URL from Supabase
-const videoUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/Videos/Trailer.mp4`;
+// Video URL from Supabase - using direct URL for reliability
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://hoirqrkdgbmvpwutwuwj.supabase.co';
+const videoUrl = `${SUPABASE_URL}/storage/v1/object/public/Videos/Trailer.mp4`;
 
 const foodImages = [
     '/food-photos/Chicken-Shawarma.png',
