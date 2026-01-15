@@ -105,20 +105,15 @@ export default function Hero() {
                 </div>
             </div>
 
-            {/* Mobile: Simple grid */}
+            {/* Mobile: Video */}
             <div className="lg:hidden max-w-7xl mx-auto px-4 mt-12">
-                <div className="grid grid-cols-2 gap-4">
-                    {foodImages.map((img, idx) => (
-                        <div key={idx} className="aspect-square rounded-2xl overflow-hidden shadow-lg">
-                            <Image
-                                src={img}
-                                alt="Food"
-                                width={300}
-                                height={300}
-                                className="object-cover w-full h-full"
-                            />
-                        </div>
-                    ))}
+                <div className="glass-card p-2 rounded-2xl">
+                    <VideoMedia
+                        src={videoUrl}
+                        className="rounded-xl aspect-video"
+                        showControls
+                        overlay="none"
+                    />
                 </div>
             </div>
         </section>
