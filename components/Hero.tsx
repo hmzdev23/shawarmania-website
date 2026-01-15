@@ -6,7 +6,7 @@ import { VideoMedia } from './ui/video-media';
 
 // Video URL from Supabase - using direct URL for reliability
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://hoirqrkdgbmvpwutwuwj.supabase.co';
-const videoUrl = `${SUPABASE_URL}/storage/v1/object/public/videos/Trailer.mp4`;
+const videoUrl = `${SUPABASE_URL}/storage/v1/object/public/Videos/Trailer.mp4`;
 
 const foodImages = [
     '/food-photos/Chicken-Shawarma.png',
